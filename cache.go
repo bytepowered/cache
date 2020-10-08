@@ -15,6 +15,7 @@ const (
 )
 
 var KeyNotFoundError = errors.New("Key not found.")
+var NoExpiration *time.Duration = nil
 
 type Cache interface {
 	Set(key, value interface{}) error

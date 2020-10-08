@@ -1,28 +1,28 @@
 # Cache
 
-Cache library for golang. It supports expirable Cache, LFU, LRU and ARC.
+Golang缓存库，基于[GCache](https://github.com/bluele/gcache)做特性增强，支持设定过期缓存，LFU, LRU, ARC, Simple等缓存算法实现。
 
-## Features
+## 特性
 
-* Supports expirable Cache, LFU, LRU and ARC.
+* 支持设定缓存失效时间：LFU, LRU and ARC；
 
-* Goroutine safe.
+* 支持协程安全；
 
-* Supports event handlers which evict, purge, and add entry. (Optional)
+* 支持监听缓存事件：evict, purge, added；(可选特性)
 
-* Automatically load cache if it doesn't exists. (Optional)
+* 支持全局Loader自动加载不存在的键值；(可选特性)
 
-* Supports loader by `GetOrLoad`
+* 支持外部化指定Loader加载不存在的键值；（通过`GetOrLoad`）
 
-## Install
+## 安装
 
 ```
 $ go get github.com/bytepowered/cache
 ```
 
-## Example
+## 示例
 
-### Manually set a key-value pair.
+### 手动设定Key-Value键值对
 
 ```go
 package main
@@ -49,7 +49,7 @@ func main() {
 Get: ok
 ```
 
-### Manually set a key-value pair, with an expiration time.
+### 手动设定Key-Value键值对，指定缓存失效时间
 
 ```go
 package main
@@ -86,7 +86,7 @@ panic: ErrKeyNotFound
 ```
 
 
-### Automatically load value
+### 全局Loader加载不存在的键值
 
 ```go
 package main
@@ -115,7 +115,36 @@ func main() {
 Get: ok
 ```
 
-### Automatically load value with expiration
+### 外部化指定Loader加载不存在的键值
+
+```go
+package main
+
+import (
+  "github.com/bytepowered/cache"
+  "fmt"
+  "time"
+)
+
+func main() {
+  gc := cache.New(20).
+    LRU().
+    Build()
+  value, err := gc.GetOrLoad("key",func(key interface{}) (interface{}, *time.Duration, error) {
+    return "by-loader", cache.NoExpiration, nil
+  })
+  if err != nil {
+    panic(err)
+  }
+  fmt.Println("Get:", value)
+}
+```
+
+```
+Get: by-loader
+```
+
+### 全局Loader加载不存在的键值，并指定缓存失效时间
 
 ```go
 package main
@@ -171,7 +200,7 @@ purged key: key
 ```
 
 
-## Cache Algorithm
+## 缓存算法
 
   * Least-Frequently Used (LFU)
 
@@ -265,7 +294,7 @@ func main() {
 }
 ```
 
-## Event handlers
+## 事件处理
 
 ### Evicted handler
 
@@ -313,12 +342,12 @@ added key: 2
 
 # Authors
 
-**Yongjia Chen**
+**Yongjia Chen @2020**
 
 * <http://github.com/yongjiapro>
 * <yongjia.chen@hotmail.com>
 
-**Jun Kimura**
+**Jun Kimura @2019**
 
 * <http://github.com/bluele>
 * <junkxdev@gmail.com>
