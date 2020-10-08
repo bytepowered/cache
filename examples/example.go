@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/bluele/gcache"
+	"github.com/bytepowered/cache"
 )
 
 func main() {
-	gc := gcache.New(10).
+	gc := cache.New(10).
 		LFU().
 		Build()
 	gc.Set("key", "ok")

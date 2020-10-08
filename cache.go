@@ -1,4 +1,4 @@
-package gcache
+package cache
 
 import (
 	"errors"
@@ -20,8 +20,9 @@ type Cache interface {
 	Set(key, value interface{}) error
 	SetWithExpire(key, value interface{}, expiration time.Duration) error
 	Get(key interface{}) (interface{}, error)
-	GetIFPresent(key interface{}) (interface{}, error)
-	GetALL(checkExpired bool) map[interface{}]interface{}
+	GetOrLoad(key interface{}, loader LoaderExpireFunc) (interface{}, error)
+	GetIfPresent(key interface{}) (interface{}, error)
+	GetAll(checkExpired bool) map[interface{}]interface{}
 	get(key interface{}, onLoad bool) (interface{}, error)
 	Remove(key interface{}) bool
 	Purge()
@@ -189,14 +190,14 @@ func buildCache(c *baseCache, cb *CacheBuilder) {
 }
 
 // load a new value using by specified key.
-func (c *baseCache) load(key interface{}, cb func(interface{}, *time.Duration, error) (interface{}, error), isWait bool) (interface{}, bool, error) {
+func (c *baseCache) load(key interface{}, exloader LoaderExpireFunc, cb func(interface{}, *time.Duration, error) (interface{}, error), isWait bool) (interface{}, bool, error) {
 	v, called, err := c.loadGroup.Do(key, func() (v interface{}, e error) {
 		defer func() {
 			if r := recover(); r != nil {
 				e = fmt.Errorf("Loader panics: %v", r)
 			}
 		}()
-		return cb(c.loaderExpireFunc(key))
+		return cb(exloader(key))
 	}, isWait)
 	if err != nil {
 		return nil, called, err

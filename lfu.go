@@ -1,9 +1,11 @@
-package gcache
+package cache
 
 import (
 	"container/list"
 	"time"
 )
+
+var _ Cache = new(LFUCache)
 
 // Discards the least frequently used items first.
 type LFUCache struct {
@@ -100,20 +102,27 @@ func (c *LFUCache) set(key, value interface{}) (interface{}, error) {
 // If it dose not exists key and has LoaderFunc,
 // generate a value using `LoaderFunc` method returns value.
 func (c *LFUCache) Get(key interface{}) (interface{}, error) {
+	return c.GetOrLoad(key, nil)
+}
+
+// Get a value from cache pool using key if it exists.
+// If it dose not exists key,
+// generate a value using `LoaderFunc` method returns value.
+func (c *LFUCache) GetOrLoad(key interface{}, loader LoaderExpireFunc) (interface{}, error) {
 	v, err := c.get(key, false)
 	if err == KeyNotFoundError {
-		return c.getWithLoader(key, true)
+		return c.getWithLoader(key, loader, true)
 	}
 	return v, err
 }
 
-// GetIFPresent gets a value from cache pool using key if it exists.
+// GetIfPresent gets a value from cache pool using key if it exists.
 // If it dose not exists key, returns KeyNotFoundError.
 // And send a request which refresh value for specified key if cache object has LoaderFunc.
-func (c *LFUCache) GetIFPresent(key interface{}) (interface{}, error) {
+func (c *LFUCache) GetIfPresent(key interface{}) (interface{}, error) {
 	v, err := c.get(key, false)
 	if err == KeyNotFoundError {
-		return c.getWithLoader(key, false)
+		return c.getWithLoader(key, nil, false)
 	}
 	return v, err
 }
@@ -151,11 +160,14 @@ func (c *LFUCache) getValue(key interface{}, onLoad bool) (interface{}, error) {
 	return nil, KeyNotFoundError
 }
 
-func (c *LFUCache) getWithLoader(key interface{}, isWait bool) (interface{}, error) {
-	if c.loaderExpireFunc == nil {
+func (c *LFUCache) getWithLoader(key interface{}, exloader LoaderExpireFunc, isWait bool) (interface{}, error) {
+	if exloader == nil && c.loaderExpireFunc == nil {
 		return nil, KeyNotFoundError
 	}
-	value, _, err := c.load(key, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
+	if exloader == nil {
+		exloader = c.loaderExpireFunc
+	}
+	value, _, err := c.load(key, exloader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}
@@ -266,8 +278,8 @@ func (c *LFUCache) keys() []interface{} {
 	return keys
 }
 
-// GetALL returns all key-value pairs in the cache.
-func (c *LFUCache) GetALL(checkExpired bool) map[interface{}]interface{} {
+// GetAll returns all key-value pairs in the cache.
+func (c *LFUCache) GetAll(checkExpired bool) map[interface{}]interface{} {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	items := make(map[interface{}]interface{}, len(c.items))

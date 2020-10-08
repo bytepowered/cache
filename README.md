@@ -1,6 +1,4 @@
-# GCache
-
-[![wercker status](https://app.wercker.com/status/1471b6c9cbc9ebbd15f8f9fe8f71ac67/m/master "wercker status")](https://app.wercker.com/project/bykey/1471b6c9cbc9ebbd15f8f9fe8f71ac67)[![GoDoc](https://godoc.org/github.com/bluele/gcache?status.png)](https://godoc.org/github.com/bluele/gcache)
+# Cache
 
 Cache library for golang. It supports expirable Cache, LFU, LRU and ARC.
 
@@ -14,10 +12,12 @@ Cache library for golang. It supports expirable Cache, LFU, LRU and ARC.
 
 * Automatically load cache if it doesn't exists. (Optional)
 
+* Supports loader by `GetOrLoad`
+
 ## Install
 
 ```
-$ go get github.com/bluele/gcache
+$ go get github.com/bytepowered/cache
 ```
 
 ## Example
@@ -28,12 +28,12 @@ $ go get github.com/bluele/gcache
 package main
 
 import (
-  "github.com/bluele/gcache"
+  "github.com/bytepowered/cache"
   "fmt"
 )
 
 func main() {
-  gc := gcache.New(20).
+  gc := cache.New(20).
     LRU().
     Build()
   gc.Set("key", "ok")
@@ -55,13 +55,13 @@ Get: ok
 package main
 
 import (
-  "github.com/bluele/gcache"
+  "github.com/bytepowered/cache"
   "fmt"
   "time"
 )
 
 func main() {
-  gc := gcache.New(20).
+  gc := cache.New(20).
     LRU().
     Build()
   gc.SetWithExpire("key", "ok", time.Second*10)
@@ -92,12 +92,12 @@ panic: ErrKeyNotFound
 package main
 
 import (
-  "github.com/bluele/gcache"
+  "github.com/bytepowered/cache"
   "fmt"
 )
 
 func main() {
-  gc := gcache.New(20).
+  gc := cache.New(20).
     LRU().
     LoaderFunc(func(key interface{}) (interface{}, error) {
       return "ok", nil
@@ -124,12 +124,12 @@ import (
   "fmt"
   "time"
 
-  "github.com/bluele/gcache"
+  "github.com/bytepowered/cache"
 )
 
 func main() {
   var evictCounter, loaderCounter, purgeCounter int
-  gc := gcache.New(20).
+  gc := cache.New(20).
     LRU().
     LoaderExpireFunc(func(key interface{}) (interface{}, *time.Duration, error) {
       loaderCounter++
@@ -180,7 +180,7 @@ purged key: key
   ```go
   func main() {
     // size: 10
-    gc := gcache.New(10).
+    gc := cache.New(10).
       LFU().
       Build()
     gc.Set("key", "value")
@@ -194,7 +194,7 @@ purged key: key
   ```go
   func main() {
     // size: 10
-    gc := gcache.New(10).
+    gc := cache.New(10).
       LRU().
       Build()
     gc.Set("key", "value")
@@ -210,7 +210,7 @@ purged key: key
   ```go
   func main() {
     // size: 10
-    gc := gcache.New(10).
+    gc := cache.New(10).
       ARC().
       Build()
     gc.Set("key", "value")
@@ -224,7 +224,7 @@ purged key: key
   ```go
   func main() {
     // size: 10
-    gc := gcache.New(10).Build()
+    gc := cache.New(10).Build()
     gc.Set("key", "value")
     v, err := gc.Get("key")
     if err != nil {
@@ -239,7 +239,7 @@ If specified `LoaderFunc`, values are automatically loaded by the cache, and are
 
 ```go
 func main() {
-  gc := gcache.New(10).
+  gc := cache.New(10).
     LRU().
     LoaderFunc(func(key interface{}) (interface{}, error) {
       return "value", nil
@@ -258,7 +258,7 @@ GCache coordinates cache fills such that only one load in one process of an enti
 ```go
 func main() {
   // LRU cache, size: 10, expiration: after a hour
-  gc := gcache.New(10).
+  gc := cache.New(10).
     LRU().
     Expiration(time.Hour).
     Build()
@@ -273,7 +273,7 @@ Event handler for evict the entry.
 
 ```go
 func main() {
-  gc := gcache.New(2).
+  gc := cache.New(2).
     EvictedFunc(func(key, value interface{}) {
       fmt.Println("evicted key:", key)
     }).
@@ -294,7 +294,7 @@ Event handler for add the entry.
 
 ```go
 func main() {
-  gc := gcache.New(2).
+  gc := cache.New(2).
     AddedFunc(func(key, value interface{}) {
       fmt.Println("added key:", key)
     }).
@@ -311,7 +311,12 @@ added key: 1
 added key: 2
 ```
 
-# Author
+# Authors
+
+**Yongjia Chen**
+
+* <http://github.com/yongjiapro>
+* <yongjia.chen@hotmail.com>
 
 **Jun Kimura**
 
