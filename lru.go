@@ -9,14 +9,14 @@ var _ Cache = new(LRUCache)
 
 // Discards the least recently used items first.
 type LRUCache struct {
-	baseCache
+	BaseCache
 	items     map[interface{}]*list.Element
 	evictList *list.List
 }
 
-func newLRUCache(cb *CacheBuilder) *LRUCache {
+func newLRUCache(cb *Builder) *LRUCache {
 	c := &LRUCache{}
-	buildCache(&c.baseCache, cb)
+	buildCache(&c.BaseCache, cb)
 
 	c.init()
 	c.loadGroup.cache = c

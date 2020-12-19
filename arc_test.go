@@ -8,7 +8,7 @@ import (
 
 func TestARCGet(t *testing.T) {
 	size := 1000
-	gc := buildTestCache(t, TYPE_ARC, size)
+	gc := buildTestCache(t, TypeArc, size)
 	testSetCache(t, gc, size)
 	testGetCache(t, gc, size)
 }
@@ -16,11 +16,11 @@ func TestARCGet(t *testing.T) {
 func TestLoadingARCGet(t *testing.T) {
 	size := 1000
 	numbers := 1000
-	testGetCache(t, buildTestLoadingCache(t, TYPE_ARC, size, loader), numbers)
+	testGetCache(t, buildTestLoadingCache(t, TypeArc, size, loader), numbers)
 }
 
 func TestARCLength(t *testing.T) {
-	gc := buildTestLoadingCacheWithExpiration(t, TYPE_ARC, 2, time.Millisecond)
+	gc := buildTestLoadingCacheWithExpiration(t, TypeArc, 2, time.Millisecond)
 	gc.Get("test1")
 	gc.Get("test2")
 	gc.Get("test3")
@@ -41,7 +41,7 @@ func TestARCLength(t *testing.T) {
 func TestARCEvictItem(t *testing.T) {
 	cacheSize := 10
 	numbers := cacheSize + 1
-	gc := buildTestLoadingCache(t, TYPE_ARC, cacheSize, loader)
+	gc := buildTestLoadingCache(t, TypeArc, cacheSize, loader)
 
 	for i := 0; i < numbers; i++ {
 		_, err := gc.Get(fmt.Sprintf("Key-%d", i))
@@ -77,11 +77,11 @@ func TestARCPurgeCache(t *testing.T) {
 }
 
 func TestARCGetIFPresent(t *testing.T) {
-	testGetIFPresent(t, TYPE_ARC)
+	testGetIFPresent(t, TypeArc)
 }
 
 func TestARCHas(t *testing.T) {
-	gc := buildTestLoadingCacheWithExpiration(t, TYPE_ARC, 2, 10*time.Millisecond)
+	gc := buildTestLoadingCacheWithExpiration(t, TypeArc, 2, 10*time.Millisecond)
 
 	for i := 0; i < 10; i++ {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {

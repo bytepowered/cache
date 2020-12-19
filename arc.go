@@ -9,7 +9,7 @@ var _ Cache = new(ARC)
 
 // Constantly balances between LRU and LFU, to improve the combined result.
 type ARC struct {
-	baseCache
+	BaseCache
 	items map[interface{}]*arcItem
 
 	part int
@@ -19,9 +19,9 @@ type ARC struct {
 	b2   *arcList
 }
 
-func newARC(cb *CacheBuilder) *ARC {
+func newARC(cb *Builder) *ARC {
 	c := &ARC{}
-	buildCache(&c.baseCache, cb)
+	buildCache(&c.BaseCache, cb)
 
 	c.init()
 	c.loadGroup.cache = c
@@ -245,14 +245,14 @@ func (c *ARC) getValue(key interface{}, onLoad bool) (interface{}, error) {
 	return nil, KeyNotFoundError
 }
 
-func (c *ARC) getWithLoader(key interface{}, exloader LoaderExpireFunc, isWait bool) (interface{}, error) {
-	if exloader == nil && c.loaderExpireFunc == nil {
+func (c *ARC) getWithLoader(key interface{}, exLoader LoaderExpireFunc, isWait bool) (interface{}, error) {
+	if exLoader == nil && c.loaderExpireFunc == nil {
 		return nil, KeyNotFoundError
 	}
-	if exloader == nil {
-		exloader = c.loaderExpireFunc
+	if exLoader == nil {
+		exLoader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exloader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
+	value, _, err := c.load(key, exLoader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}

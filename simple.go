@@ -8,13 +8,13 @@ var _ Cache = new(SimpleCache)
 
 // SimpleCache has no clear priority for evict cache. It depends on key-value map order.
 type SimpleCache struct {
-	baseCache
+	BaseCache
 	items map[interface{}]*simpleItem
 }
 
-func newSimpleCache(cb *CacheBuilder) *SimpleCache {
+func newSimpleCache(cb *Builder) *SimpleCache {
 	c := &SimpleCache{}
-	buildCache(&c.baseCache, cb)
+	buildCache(&c.BaseCache, cb)
 
 	c.init()
 	c.loadGroup.cache = c
@@ -149,14 +149,14 @@ func (c *SimpleCache) getValue(key interface{}, onLoad bool) (interface{}, error
 	return nil, KeyNotFoundError
 }
 
-func (c *SimpleCache) getWithLoader(key interface{}, exloader LoaderExpireFunc, isWait bool) (interface{}, error) {
-	if exloader == nil && c.loaderExpireFunc == nil {
+func (c *SimpleCache) getWithLoader(key interface{}, exLoader LoaderExpireFunc, isWait bool) (interface{}, error) {
+	if exLoader == nil && c.loaderExpireFunc == nil {
 		return nil, KeyNotFoundError
 	}
-	if exloader == nil {
-		exloader = c.loaderExpireFunc
+	if exLoader == nil {
+		exLoader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exloader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
+	value, _, err := c.load(key, exLoader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}

@@ -9,14 +9,14 @@ var _ Cache = new(LFUCache)
 
 // Discards the least frequently used items first.
 type LFUCache struct {
-	baseCache
+	BaseCache
 	items    map[interface{}]*lfuItem
 	freqList *list.List // list for freqEntry
 }
 
-func newLFUCache(cb *CacheBuilder) *LFUCache {
+func newLFUCache(cb *Builder) *LFUCache {
 	c := &LFUCache{}
-	buildCache(&c.baseCache, cb)
+	buildCache(&c.BaseCache, cb)
 
 	c.init()
 	c.loadGroup.cache = c
@@ -160,14 +160,14 @@ func (c *LFUCache) getValue(key interface{}, onLoad bool) (interface{}, error) {
 	return nil, KeyNotFoundError
 }
 
-func (c *LFUCache) getWithLoader(key interface{}, exloader LoaderExpireFunc, isWait bool) (interface{}, error) {
-	if exloader == nil && c.loaderExpireFunc == nil {
+func (c *LFUCache) getWithLoader(key interface{}, exLoader LoaderExpireFunc, isWait bool) (interface{}, error) {
+	if exLoader == nil && c.loaderExpireFunc == nil {
 		return nil, KeyNotFoundError
 	}
-	if exloader == nil {
-		exloader = c.loaderExpireFunc
+	if exLoader == nil {
+		exLoader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exloader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
+	value, _, err := c.load(key, exLoader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}

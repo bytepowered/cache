@@ -10,7 +10,7 @@ func TestLFUGet(t *testing.T) {
 	size := 1000
 	numbers := 1000
 
-	gc := buildTestLoadingCache(t, TYPE_LFU, size, loader)
+	gc := buildTestLoadingCache(t, TypeLfu, size, loader)
 	testSetCache(t, gc, numbers)
 	testGetCache(t, gc, numbers)
 }
@@ -19,12 +19,12 @@ func TestLoadingLFUGet(t *testing.T) {
 	size := 1000
 	numbers := 1000
 
-	gc := buildTestLoadingCache(t, TYPE_LFU, size, loader)
+	gc := buildTestLoadingCache(t, TypeLfu, size, loader)
 	testGetCache(t, gc, numbers)
 }
 
 func TestLFULength(t *testing.T) {
-	gc := buildTestLoadingCache(t, TYPE_LFU, 1000, loader)
+	gc := buildTestLoadingCache(t, TypeLfu, 1000, loader)
 	gc.Get("test1")
 	gc.Get("test2")
 	length := gc.Len(true)
@@ -37,7 +37,7 @@ func TestLFULength(t *testing.T) {
 func TestLFUEvictItem(t *testing.T) {
 	cacheSize := 10
 	numbers := 11
-	gc := buildTestLoadingCache(t, TYPE_LFU, cacheSize, loader)
+	gc := buildTestLoadingCache(t, TypeLfu, cacheSize, loader)
 
 	for i := 0; i < numbers; i++ {
 		_, err := gc.Get(fmt.Sprintf("Key-%d", i))
@@ -48,11 +48,11 @@ func TestLFUEvictItem(t *testing.T) {
 }
 
 func TestLFUGetIFPresent(t *testing.T) {
-	testGetIFPresent(t, TYPE_LFU)
+	testGetIFPresent(t, TypeLfu)
 }
 
 func TestLFUHas(t *testing.T) {
-	gc := buildTestLoadingCacheWithExpiration(t, TYPE_LFU, 2, 10*time.Millisecond)
+	gc := buildTestLoadingCacheWithExpiration(t, TypeLfu, 2, 10*time.Millisecond)
 
 	for i := 0; i < 10; i++ {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
