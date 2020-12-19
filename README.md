@@ -130,8 +130,8 @@ func main() {
   gc := cache.New(20).
     LRU().
     Build()
-  value, err := gc.GetOrLoad("key",func(key interface{}) (interface{}, *time.Duration, error) {
-    return "by-loader", cache.NoExpiration, nil
+  value, err := gc.GetOrLoad("key",func(key interface{}) (cache.ExpirableValue, error) {
+    return cache.NewDefaultValue("my-new-value"), nil
   })
   if err != nil {
     panic(err)
@@ -160,10 +160,9 @@ func main() {
   var evictCounter, loaderCounter, purgeCounter int
   gc := cache.New(20).
     LRU().
-    LoaderExpireFunc(func(key interface{}) (interface{}, *time.Duration, error) {
+    LoaderExpireFunc(func(key interface{}) (cache.ExpirableValue, error) {
       loaderCounter++
-      expire := 1 * time.Second
-      return "ok", &expire, nil
+      return cache.NewExpirableValue("ok", time.Second*5), nil
     }).
     EvictedFunc(func(key, value interface{}) {
       evictCounter++

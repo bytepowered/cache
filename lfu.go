@@ -167,21 +167,21 @@ func (c *LFUCache) getWithLoader(key interface{}, exLoader LoaderExpireFunc, isW
 	if exLoader == nil {
 		exLoader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exLoader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
+	value, _, err := c.load(key, exLoader, func(exval ExpirableValue, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}
 		c.mu.Lock()
 		defer c.mu.Unlock()
-		item, err := c.set(key, v)
+		item, err := c.set(key, exval.Value)
 		if err != nil {
 			return nil, err
 		}
-		if expiration != nil {
-			t := c.clock.Now().Add(*expiration)
+		if exval.Expire > 0 {
+			t := c.clock.Now().Add(exval.Expire)
 			item.(*lfuItem).expiration = &t
 		}
-		return v, nil
+		return exval.Value, nil
 	}, isWait)
 	if err != nil {
 		return nil, err

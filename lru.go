@@ -160,21 +160,21 @@ func (c *LRUCache) getWithLoader(key interface{}, exloader LoaderExpireFunc, isW
 	if exloader == nil {
 		exloader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exloader, func(v interface{}, expiration *time.Duration, e error) (interface{}, error) {
+	value, _, err := c.load(key, exloader, func(exval ExpirableValue, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}
 		c.mu.Lock()
 		defer c.mu.Unlock()
-		item, err := c.set(key, v)
+		item, err := c.set(key, exval.Value)
 		if err != nil {
 			return nil, err
 		}
-		if expiration != nil {
-			t := c.clock.Now().Add(*expiration)
+		if exval.Expire > 0 {
+			t := c.clock.Now().Add(exval.Expire)
 			item.(*lruItem).expiration = &t
 		}
-		return v, nil
+		return exval.Value, nil
 	}, isWait)
 	if err != nil {
 		return nil, err
