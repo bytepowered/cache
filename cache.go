@@ -3,6 +3,7 @@ package cache
 import (
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -225,7 +226,7 @@ func (c *BaseCache) load(key interface{}, exLoader LoaderExpireFunc, callback fu
 	v, called, err := c.loadGroup.Do(key, func() (v interface{}, e error) {
 		defer func() {
 			if r := recover(); r != nil {
-				e = fmt.Errorf("cache loader panics: %v", r)
+				e = fmt.Errorf("[*bytepowered/base-cache] loader panics: %v, stack: %s", r, string(debug.Stack()))
 			}
 		}()
 		return callback(exLoader(key))
