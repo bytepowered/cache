@@ -130,8 +130,8 @@ func main() {
   gc := cache.New(20).
     LRU().
     Build()
-  value, err := gc.GetOrLoad("key",func(key interface{}) (cache.ExpirableValue, error) {
-    return cache.NewDefaultValue("my-new-value"), nil
+  value, err := gc.GetOrLoad("key",func(key interface{}) (cache.Expirable, error) {
+    return cache.NewDefault("my-new-value"), nil
   })
   if err != nil {
     panic(err)
@@ -160,9 +160,9 @@ func main() {
   var evictCounter, loaderCounter, purgeCounter int
   gc := cache.New(20).
     LRU().
-    LoaderExpireFunc(func(key interface{}) (cache.ExpirableValue, error) {
+    LoaderExpireFunc(func(key interface{}) (cache.Expirable, error) {
       loaderCounter++
-      return cache.NewExpirableValue("ok", time.Second*5), nil
+      return cache.NewExpirable("ok", time.Second*5), nil
     }).
     EvictedFunc(func(key, value interface{}) {
       evictCounter++
@@ -341,7 +341,7 @@ added key: 2
 
 # Authors
 
-**Yongjia Chen @2020**
+**Yongjia Chen 2020 - 2021**
 
 * <http://github.com/yongjiapro>
 * <yongjia.chen@hotmail.com>
