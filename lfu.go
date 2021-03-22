@@ -19,7 +19,7 @@ func newLFUCache(cb *Builder) *LFUCache {
 	buildCache(&c.BaseCache, cb)
 
 	c.init()
-	c.loadGroup.cache = c
+	c.group.cache = c
 	return c
 }
 
@@ -167,7 +167,7 @@ func (c *LFUCache) getWithLoader(key interface{}, exLoader LoaderExpireFunc, isW
 	if exLoader == nil {
 		exLoader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exLoader, func(exval ExpirableValue, e error) (interface{}, error) {
+	exp, _, err := c.load(key, exLoader, func(exval Expirable, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}
@@ -186,7 +186,7 @@ func (c *LFUCache) getWithLoader(key interface{}, exLoader LoaderExpireFunc, isW
 	if err != nil {
 		return nil, err
 	}
-	return value, nil
+	return exp, nil
 }
 
 func (c *LFUCache) increment(item *lfuItem) {

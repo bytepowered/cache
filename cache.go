@@ -35,14 +35,14 @@ type Cache interface {
 	statsAccessor
 }
 
-type ExpirableValue struct {
+type Expirable struct {
 	Value  interface{}   // Value
 	Expire time.Duration // Specified expiration of this value; expire<=0 will use default
 }
 
 type (
 	LoaderFunc       func(interface{}) (interface{}, error)
-	LoaderExpireFunc func(interface{}) (ExpirableValue, error)
+	LoaderExpireFunc func(interface{}) (Expirable, error)
 	EvictedFunc      func(interface{}, interface{})
 	PurgeVisitorFunc func(interface{}, interface{})
 	AddedFunc        func(interface{}, interface{})
@@ -74,18 +74,18 @@ type BaseCache struct {
 	serializeFunc    SerializeFunc
 	expiration       *time.Duration
 	mu               sync.RWMutex
-	loadGroup        Group
+	group            Group
 	*stats
 }
 
-func NewExpirableValue(value interface{}, expire time.Duration) ExpirableValue {
-	return ExpirableValue{
+func NewExpirable(value interface{}, expire time.Duration) Expirable {
+	return Expirable{
 		Value: value, Expire: expire,
 	}
 }
 
-func NewDefaultValue(value interface{}) ExpirableValue {
-	return NewExpirableValue(value, time.Duration(0))
+func NewDefault(value interface{}) Expirable {
+	return NewExpirable(value, time.Duration(-1))
 }
 
 func New(size int) *Builder {
@@ -120,9 +120,9 @@ func (b *Builder) Clock(clock Clock) *Builder {
 // Set a loader function.
 // loaderFunc: create a new value with this function if cached value is expired.
 func (b *Builder) LoaderFunc(loaderFunc LoaderFunc) *Builder {
-	return b.LoaderExpireFunc(func(k interface{}) (ExpirableValue, error) {
+	return b.LoaderExpireFunc(func(k interface{}) (Expirable, error) {
 		v, err := loaderFunc(k)
-		return NewDefaultValue(v), err
+		return NewDefault(v), err
 	})
 }
 
@@ -222,8 +222,8 @@ func buildCache(c *BaseCache, cb *Builder) {
 }
 
 // load a new value using by specified key.
-func (c *BaseCache) load(key interface{}, exLoader LoaderExpireFunc, callback func(ExpirableValue, error) (interface{}, error), isWait bool) (interface{}, bool, error) {
-	v, called, err := c.loadGroup.Do(key, func() (v interface{}, e error) {
+func (c *BaseCache) load(key interface{}, exLoader LoaderExpireFunc, callback func(Expirable, error) (interface{}, error), isWait bool) (interface{}, bool, error) {
+	v, called, err := c.group.Do(key, func() (v interface{}, e error) {
 		defer func() {
 			if r := recover(); r != nil {
 				e = fmt.Errorf("[*bytepowered/base-cache] loader panics: %v, stack: %s", r, string(debug.Stack()))

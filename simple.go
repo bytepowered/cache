@@ -17,7 +17,7 @@ func newSimpleCache(cb *Builder) *SimpleCache {
 	buildCache(&c.BaseCache, cb)
 
 	c.init()
-	c.loadGroup.cache = c
+	c.group.cache = c
 	return c
 }
 
@@ -156,7 +156,7 @@ func (c *SimpleCache) getWithLoader(key interface{}, exLoader LoaderExpireFunc, 
 	if exLoader == nil {
 		exLoader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exLoader, func(exval ExpirableValue, e error) (interface{}, error) {
+	exp, _, err := c.load(key, exLoader, func(exval Expirable, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}
@@ -175,7 +175,7 @@ func (c *SimpleCache) getWithLoader(key interface{}, exLoader LoaderExpireFunc, 
 	if err != nil {
 		return nil, err
 	}
-	return value, nil
+	return exp, nil
 }
 
 func (c *SimpleCache) evict(count int) {

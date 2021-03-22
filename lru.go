@@ -19,7 +19,7 @@ func newLRUCache(cb *Builder) *LRUCache {
 	buildCache(&c.BaseCache, cb)
 
 	c.init()
-	c.loadGroup.cache = c
+	c.group.cache = c
 	return c
 }
 
@@ -160,7 +160,7 @@ func (c *LRUCache) getWithLoader(key interface{}, exloader LoaderExpireFunc, isW
 	if exloader == nil {
 		exloader = c.loaderExpireFunc
 	}
-	value, _, err := c.load(key, exloader, func(exval ExpirableValue, e error) (interface{}, error) {
+	exp, _, err := c.load(key, exloader, func(exval Expirable, e error) (interface{}, error) {
 		if e != nil {
 			return nil, e
 		}
@@ -179,7 +179,7 @@ func (c *LRUCache) getWithLoader(key interface{}, exloader LoaderExpireFunc, isW
 	if err != nil {
 		return nil, err
 	}
-	return value, nil
+	return exp, nil
 }
 
 // evict removes the oldest item from the cache.
